@@ -58,6 +58,9 @@
     <Filter Include="Assets\Shaders\BSDFs">
       <UniqueIdentifier>{c7a140a7-fbad-4d12-a1e5-4e28f5a59977}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Shaders\Compute">
+      <UniqueIdentifier>{a9b37b53-3a6a-48af-8bd1-cd1ad599f41c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\Compile.py">
@@ -116,6 +119,9 @@
     </None>
     <None Include="src\Assets\Shaders\Common\DirectLight.glsl">
       <Filter>Assets\Shaders\Common</Filter>
+    </None>
+    <None Include="src\Assets\Shaders\Compute\Denoiser.comp">
+      <Filter>Assets\Shaders\Compute</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

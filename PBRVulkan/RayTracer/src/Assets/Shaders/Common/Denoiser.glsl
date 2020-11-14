@@ -72,10 +72,13 @@ vec4 denoise()
     vec4 sum = vec4(0.0);
     float c_phi = 1.0;
     float n_phi = 0.5;
+    float p_phi = 0.3;
+
+    float inv = 1.f / float(ubo.frame);
 
     vec4 cval = imageLoad(OutputImage, ivec2(fragCoord)); // color
     vec4 nval = imageLoad(NormalsImage, ivec2(fragCoord)); // normal
-//  vec4 pval = imageLoad(DepthImage, ivec2(fragCoord)); // depth
+    vec4 pval = imageLoad(PositionImage, ivec2(fragCoord)); // position
     
     float cum_w = 0.0;
 
@@ -96,13 +99,13 @@ vec4 denoise()
         dist2 = max(dot(t, t), 0.0);
         float n_w = min(exp(-(dist2)/n_phi), 1.0);
         
-        // Depth
-        // vec4 ptmp = imageLoad(DepthImage, ivec2(uv));
-        // t = pval - ptmp;
-        // dist2 = dot(t,t);
-        // float p_w = min(exp(-(dist2)/p_phi), 1.0);
+        // Position
+        vec4 ptmp = imageLoad(PositionImage, ivec2(uv));
+        t = pval - ptmp;
+        dist2 = dot(t,t);
+        float p_w = min(exp(-(dist2)/p_phi), 1.0);
         
-        float weight = c_w * n_w;
+        float weight = c_w * n_w * p_w;
         sum += ctmp * weight * kernel[i];
         cum_w += weight * kernel[i];
     }

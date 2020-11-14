@@ -24,6 +24,7 @@
     <None Include="src\Assets\Shaders\Common\Sampling.glsl" />
     <None Include="src\Assets\Shaders\Common\Structs.glsl" />
     <None Include="src\Assets\Shaders\Common\Vertex.glsl" />
+    <None Include="src\Assets\Shaders\Compute\Denoiser.comp" />
     <None Include="src\Assets\Shaders\Rasterizer\Fragment.frag" />
     <None Include="src\Assets\Shaders\Rasterizer\Vertex.vert" />
     <None Include="src\Assets\Shaders\Raytracer\Integrators\AO.glsl" />
@@ -193,6 +194,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <FxCompile>
+      <EntryPointName />
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -221,6 +225,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <FxCompile>
+      <EntryPointName />
+    </FxCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
