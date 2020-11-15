@@ -54,6 +54,8 @@
     <ClCompile Include="src\Tracer\Widgets\SceneWidget.cpp" />
     <ClCompile Include="src\Vulkan\AccelerationStructure.cpp" />
     <ClCompile Include="src\Vulkan\BLAS.cpp" />
+    <ClCompile Include="src\Vulkan\ComputePipeline.cpp" />
+    <ClCompile Include="src\Vulkan\Computer.cpp" />
     <ClCompile Include="src\Vulkan\Core.cpp" />
     <ClCompile Include="src\Vulkan\Buffer.cpp" />
     <ClCompile Include="src\Vulkan\Command.cpp" />
@@ -109,6 +111,8 @@
     <ClInclude Include="src\Tracer\Widgets\Widget.h" />
     <ClInclude Include="src\Vulkan\AccelerationStructure.h" />
     <ClInclude Include="src\Vulkan\BLAS.h" />
+    <ClInclude Include="src\Vulkan\ComputePipeline.h" />
+    <ClInclude Include="src\Vulkan\Computer.h" />
     <ClInclude Include="src\Vulkan\Core.h" />
     <ClInclude Include="src\Vulkan\Buffer.h" />
     <ClInclude Include="src\Vulkan\CommandBuffers.h" />

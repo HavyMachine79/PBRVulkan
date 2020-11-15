@@ -61,6 +61,9 @@
     <Filter Include="Assets\Shaders\Compute">
       <UniqueIdentifier>{a9b37b53-3a6a-48af-8bd1-cd1ad599f41c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Computer">
+      <UniqueIdentifier>{29b40f75-b6fa-420e-8ab5-741b44f45dcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\Compile.py">
@@ -267,6 +270,12 @@
     <ClCompile Include="src\Tracer\Widgets\CinemaWidget.cpp">
       <Filter>Tracer\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\Vulkan\ComputePipeline.cpp">
+      <Filter>Computer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vulkan\Computer.cpp">
+      <Filter>Computer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Vulkan\Device.h">
@@ -424,6 +433,12 @@
     </ClInclude>
     <ClInclude Include="src\Tracer\Widgets\CinemaWidget.h">
       <Filter>Tracer\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vulkan\ComputePipeline.h">
+      <Filter>Computer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vulkan\Computer.h">
+      <Filter>Computer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

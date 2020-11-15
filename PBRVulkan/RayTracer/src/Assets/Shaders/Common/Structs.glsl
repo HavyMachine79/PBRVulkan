@@ -74,7 +74,6 @@ struct Uniform
 	float focalDistance;
 	float hdrResolution;
 	float AORayLength;
-	float denoiseStrength;
 	int integratorType;
 };
 

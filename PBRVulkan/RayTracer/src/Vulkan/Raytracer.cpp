@@ -69,6 +69,38 @@ namespace Vulkan
 		shaderBindingTable.reset(new ShaderBindingTable(*raytracerGraphicsPipeline));
 	}
 
+	void Raytracer::CopyToSwapChain(VkCommandBuffer commandBuffer, uint32_t imageIndex, const Image& image) const
+	{
+		const auto extent = swapChain->Extent;
+
+		VkImageSubresourceRange subresourceRange;
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.layerCount = 1;
+
+		Image::MemoryBarrier(commandBuffer, swapChain->GetImage()[imageIndex], subresourceRange, 0,
+		                     VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+		                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		VkImageCopy copyRegion;
+		copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+		copyRegion.srcOffset = { 0, 0, 0 };
+		copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+		copyRegion.dstOffset = { 0, 0, 0 };
+		copyRegion.extent = { extent.width, extent.height, 1 };
+
+		vkCmdCopyImage(commandBuffer,
+		               image.Get(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		               swapChain->GetImage()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		               1, &copyRegion);
+
+		Image::MemoryBarrier(commandBuffer, swapChain->GetImage()[imageIndex], subresourceRange,
+		                     VK_ACCESS_TRANSFER_WRITE_BIT,
+		                     0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	}
+
 	void Raytracer::Render(VkFramebuffer framebuffer, VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
 		const auto extent = swapChain->Extent;
@@ -112,26 +144,6 @@ namespace Vulkan
 		Image::MemoryBarrier(commandBuffer, outputImage->Get(), subresourceRange,
 		                     VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL,
 		                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-		Image::MemoryBarrier(commandBuffer, swapChain->GetImage()[imageIndex], subresourceRange, 0,
-		                     VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
-		                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-		VkImageCopy copyRegion;
-		copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-		copyRegion.srcOffset = { 0, 0, 0 };
-		copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-		copyRegion.dstOffset = { 0, 0, 0 };
-		copyRegion.extent = { extent.width, extent.height, 1 };
-
-		vkCmdCopyImage(commandBuffer,
-		               outputImage->Get(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		               swapChain->GetImage()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		               1, &copyRegion);
-
-		Image::MemoryBarrier(commandBuffer, swapChain->GetImage()[imageIndex], subresourceRange,
-		                     VK_ACCESS_TRANSFER_WRITE_BIT,
-		                     0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	}
 
 	void Raytracer::CreateOutputTexture()

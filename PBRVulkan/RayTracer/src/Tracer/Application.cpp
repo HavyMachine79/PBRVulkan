@@ -51,6 +51,8 @@ namespace Tracer
 		RegisterCallbacks();
 		Raytracer::CreateSwapChain();
 		CreateMenu();
+
+		computer.reset(new Vulkan::Computer(*swapChain, *device, GetOutputImageView()));
 	}
 
 	void Application::LoadScene()
@@ -82,9 +84,6 @@ namespace Tracer
 
 		if (settings.UseGammaCorrection)
 			defines.push_back(Parser::Define::USE_GAMMA_CORRECTION);
-
-		if (settings.UseDenoiser)
-			defines.push_back(Parser::Define::USE_DENOISER);
 
 		includes.push_back(static_cast<Parser::Include>(settings.IntegratorType));
 
@@ -153,7 +152,6 @@ namespace Tracer
 		uniform.hdrResolution = scene->UseHDR() ? scene->GetHDRResolution() : 0.f;
 		uniform.frame = frame;
 		uniform.AORayLength = settings.AORayLength;
-		uniform.denoiserStrength = settings.DenoiseStrength;
 		uniform.integratorType = settings.IntegratorType;
 
 		uniformBuffers[imageIndex]->Fill(&uniform);
@@ -170,6 +168,8 @@ namespace Tracer
 			Rasterizer::Render(framebuffer, commandBuffer, imageIndex);
 		else
 			Raytracer::Render(framebuffer, commandBuffer, imageIndex);
+
+		PostProcessing(commandBuffer, imageIndex);
 
 		menu->Render(framebuffer, commandBuffer);
 
@@ -242,6 +242,19 @@ namespace Tracer
 			vkGetPhysicalDeviceProperties(device, &prop);
 			const auto* selected = device == physicalDevice ? "	 (selected)" : "";
 			std::cout << "	" << prop.deviceName << selected << std::endl;
+		}
+	}
+
+	void Application::PostProcessing(VkCommandBuffer commandBuffer, uint32_t imageIndex) const
+	{
+		if (settings.UseDenoiser)
+		{
+			computer->Submit();
+			CopyToSwapChain(commandBuffer, imageIndex, computer->GetOutputImage());
+		}
+		else
+		{
+			CopyToSwapChain(commandBuffer, imageIndex, GetOutputImage());
 		}
 	}
 

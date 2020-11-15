@@ -22,7 +22,6 @@ layout(location = 0) rayPayloadNV RayPayload payload;
 
 #include "../Common/Random.glsl"
 #include "../Common/Math.glsl"
-#include "../Common/Denoiser.glsl"
 
 void main() 
 {
@@ -121,8 +120,4 @@ void main()
 	#endif
 
 	imageStore(OutputImage, ivec2(gl_LaunchIDNV.xy), vec4(ldr, 1.f));
-
-	#ifdef USE_DENOISER
-	imageStore(OutputImage, ivec2(gl_LaunchIDNV.xy),  denoise());
-	#endif
 }

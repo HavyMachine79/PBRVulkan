@@ -146,6 +146,6 @@ namespace Vulkan
 		auto* physicalDevice = instance->GetDevices().front();
 
 		device.reset(new Device(physicalDevice, *surface));
-		commandPool.reset(new CommandPool(*device));
+		commandPool.reset(new CommandPool(*device, device->GraphicsFamilyIndex));
 	}
 }
