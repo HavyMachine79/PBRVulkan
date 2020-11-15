@@ -71,8 +71,6 @@ namespace Vulkan
 
 	void Raytracer::CopyToSwapChain(VkCommandBuffer commandBuffer, uint32_t imageIndex, const Image& image) const
 	{
-		const auto extent = swapChain->Extent;
-
 		VkImageSubresourceRange subresourceRange;
 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		subresourceRange.baseMipLevel = 0;
@@ -80,10 +78,15 @@ namespace Vulkan
 		subresourceRange.baseArrayLayer = 0;
 		subresourceRange.layerCount = 1;
 
+		Image::MemoryBarrier(commandBuffer, image.Get(), subresourceRange,
+		                     VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL,
+		                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
 		Image::MemoryBarrier(commandBuffer, swapChain->GetImage()[imageIndex], subresourceRange, 0,
 		                     VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
 		                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
+		const auto extent = swapChain->Extent;
 		VkImageCopy copyRegion;
 		copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 		copyRegion.srcOffset = { 0, 0, 0 };
@@ -140,10 +143,6 @@ namespace Vulkan
 		                             shaderBindingTable->GetEntrySize(),
 		                             nullptr, 0, 0,
 		                             extent.width, extent.height, 1);
-
-		Image::MemoryBarrier(commandBuffer, outputImage->Get(), subresourceRange,
-		                     VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL,
-		                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	}
 
 	void Raytracer::CreateOutputTexture()

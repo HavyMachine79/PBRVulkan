@@ -28,6 +28,16 @@ namespace Vulkan
 			return *outputImageView;
 		}
 
+		[[nodiscard]] class ImageView& GetNormalsImageView() const
+		{
+			return *normalsImageView;
+		}
+
+		[[nodiscard]] class ImageView& GetPositionImageView() const
+		{
+			return *positionsImageView;
+		}
+
 		[[nodiscard]] const class Image& GetOutputImage() const
 		{
 			return *outputImage;

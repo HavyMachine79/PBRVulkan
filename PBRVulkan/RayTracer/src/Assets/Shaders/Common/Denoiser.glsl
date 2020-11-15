@@ -1,8 +1,8 @@
 // Edge-Avoiding À-TrousWavelet Transform for denoising
 
-float denoiseStrength = ubo.denoiseStrength;
+float denoiseStrength = 2.f;
 
-vec4 denoise() 
+vec4 denoise(ivec2 coords) 
 {
     vec2 offset[25];
 
@@ -68,17 +68,15 @@ vec4 denoise()
     kernel[23] = 1.0f/64.0f;
     kernel[24] = 1.0f/256.0f;
     
-    vec2 fragCoord = gl_LaunchIDNV.xy;
+    vec2 fragCoord = coords;
     vec4 sum = vec4(0.0);
     float c_phi = 1.0;
     float n_phi = 0.5;
     float p_phi = 0.3;
 
-    float inv = 1.f / float(ubo.frame);
-
-    vec4 cval = imageLoad(OutputImage, ivec2(fragCoord)); // color
+    vec4 cval = imageLoad(InputImage, ivec2(fragCoord)); // color
     vec4 nval = imageLoad(NormalsImage, ivec2(fragCoord)); // normal
-    vec4 pval = imageLoad(PositionImage, ivec2(fragCoord)); // position
+    vec4 pval = imageLoad(PositionsImage, ivec2(fragCoord)); // position
     
     float cum_w = 0.0;
 
@@ -88,7 +86,7 @@ vec4 denoise()
         ivec2 uv = ivec2(fragCoord + offset[i] * denoiseStrength);
         
         // Color
-        vec4 ctmp = imageLoad(OutputImage, uv);
+        vec4 ctmp = imageLoad(InputImage, uv);
         vec4 t = cval - ctmp;
         float dist2 = dot(t, t);
         float c_w = min(exp(-(dist2)/c_phi), 1.0);
@@ -100,7 +98,7 @@ vec4 denoise()
         float n_w = min(exp(-(dist2)/n_phi), 1.0);
         
         // Position
-        vec4 ptmp = imageLoad(PositionImage, ivec2(uv));
+        vec4 ptmp = imageLoad(PositionsImage, ivec2(uv));
         t = pval - ptmp;
         dist2 = dot(t,t);
         float p_w = min(exp(-(dist2)/p_phi), 1.0);

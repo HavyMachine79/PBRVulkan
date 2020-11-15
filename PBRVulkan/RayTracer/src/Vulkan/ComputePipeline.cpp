@@ -14,8 +14,10 @@ namespace Vulkan
 {
 	ComputePipeline::ComputePipeline(const SwapChain& swapChain,
 	                                 const Device& device,
-	                                 ImageView& inputImage,
-	                                 ImageView& outputImage): device(device), swapChain(swapChain)
+	                                 const ImageView& inputImage,
+	                                 const ImageView& outputImage,
+	                                 const ImageView& normalsImage,
+	                                 const ImageView& positionsImage): device(device), swapChain(swapChain)
 	{
 		const Shader computeShader(device, "Denoiser.comp.spv");
 
@@ -28,6 +30,8 @@ namespace Vulkan
 		{
 			{ 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
 			{ 1, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
+			{ 2, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
+			{ 3, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT }
 		};
 
 		descriptorsManager.reset(new DescriptorsManager(device, swapChain, descriptorBindings));
@@ -48,7 +52,7 @@ namespace Vulkan
 
 		for (size_t imageIndex = 0; imageIndex < swapChain.GetImage().size(); imageIndex++)
 		{
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+			std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
 
 			// Input image
 			VkDescriptorImageInfo inputImageInfo = {};
@@ -75,6 +79,32 @@ namespace Vulkan
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			descriptorWrites[1].descriptorCount = 1;
 			descriptorWrites[1].pImageInfo = &outputImageInfo;
+
+			// Normals image
+			VkDescriptorImageInfo normalsImageInfo = {};
+			normalsImageInfo.imageView = normalsImage.Get();
+			normalsImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+			descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[2].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[2].dstBinding = 2;
+			descriptorWrites[2].dstArrayElement = 0;
+			descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			descriptorWrites[2].descriptorCount = 1;
+			descriptorWrites[2].pImageInfo = &normalsImageInfo;
+
+			// Positions image
+			VkDescriptorImageInfo positionsImageInfo = {};
+			positionsImageInfo.imageView = positionsImage.Get();
+			positionsImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+			descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[3].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[3].dstBinding = 3;
+			descriptorWrites[3].dstArrayElement = 0;
+			descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			descriptorWrites[3].descriptorCount = 1;
+			descriptorWrites[3].pImageInfo = &positionsImageInfo;
 
 			vkUpdateDescriptorSets(device.Get(), static_cast<uint32_t>(descriptorWrites.size()),
 			                       descriptorWrites.data(), 0, nullptr);

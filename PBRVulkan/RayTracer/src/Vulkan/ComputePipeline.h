@@ -14,17 +14,27 @@ namespace Vulkan
 
 		ComputePipeline(const class SwapChain& swapChain,
 		                const class Device& device,
-		                class ImageView& inputImage,
-		                class ImageView& outputImage);
+		                const class ImageView& inputImage,
+		                const class ImageView& outputImage,
+		                const class ImageView& normalsImage,
+		                const class ImageView& positionsImage);
 
 		~ComputePipeline();
+
+		[[nodiscard]] const std::vector<VkPipeline>& GetComputePipelines() const
+		{
+			return pipelines;
+		}
+
+		[[nodiscard]] VkPipelineLayout GetPipelineLayout() const
+		{
+			return pipelineLayout;
+		}
 
 		[[nodiscard]] const std::vector<VkDescriptorSet>& GetDescriptorSets() const
 		{
 			return descriptorSets;
 		}
-
-		[[nodiscard]] VkRenderPass GetRenderPass() const;
 
 	private:
 		const Device& device;

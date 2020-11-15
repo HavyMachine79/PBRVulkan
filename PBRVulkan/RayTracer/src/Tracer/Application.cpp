@@ -51,8 +51,7 @@ namespace Tracer
 		RegisterCallbacks();
 		Raytracer::CreateSwapChain();
 		CreateMenu();
-
-		computer.reset(new Vulkan::Computer(*swapChain, *device, GetOutputImageView()));
+		CreateComputePipeline();
 	}
 
 	void Application::LoadScene()
@@ -103,6 +102,7 @@ namespace Tracer
 		Raytracer::CreateSwapChain();
 		CreateMenu();
 		ResetAccumulation();
+		CreateComputePipeline();
 	}
 
 	void Application::RecompileShaders()
@@ -256,6 +256,16 @@ namespace Tracer
 		{
 			CopyToSwapChain(commandBuffer, imageIndex, GetOutputImage());
 		}
+	}
+
+	void Application::CreateComputePipeline()
+	{
+		computer.reset(new Vulkan::Computer(
+			*swapChain,
+			*device,
+			GetOutputImageView(),
+			GetNormalsImageView(),
+			GetPositionImageView()));
 	}
 
 	void Application::Run()
