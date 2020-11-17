@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+
 
 #include "Vulkan.h"
 
@@ -14,12 +16,12 @@ namespace Vulkan
 		Computer(
 			const class SwapChain& swapChain,
 			const class Device& device,
-			const class ImageView& inputImageView,
+			class ImageView& inputImageView,
 			const class ImageView& normalsImageView,
 			const class ImageView& positionsImageView);
 		~Computer();
 
-		void Submit() const;
+		void Denoise() const;
 
 		[[nodiscard]] const class Image& GetOutputImage() const
 		{
@@ -27,20 +29,19 @@ namespace Vulkan
 		}
 
 	private:
-
-		void CreateComputePipeline();
 		void CreateOutputTexture();
-		void BuildCommand() const;
+		void CreateUniformBuffer();
 
+		ImageView& inputImageView;
 		const SwapChain& swapChain;
 		const Device& device;
-		const ImageView& inputImageView;
 		const ImageView& normalsImageView;
 		const ImageView& positionsImageView;
 
 		std::unique_ptr<class Image> outputImage;
 		std::unique_ptr<class ImageView> outputImageView;
-		
+		std::vector<std::unique_ptr<class Buffer>> uniformBuffers;
+
 		std::unique_ptr<class CommandPool> commandPool;
 		std::unique_ptr<class CommandBuffers> commandBuffers;
 		std::unique_ptr<class ComputePipeline> computePipeline;

@@ -93,6 +93,7 @@
     <ClInclude Include="src\Assets\Material.h" />
     <ClInclude Include="src\Assets\Mesh.h" />
     <ClInclude Include="src\Assets\Texture.h" />
+    <ClInclude Include="src\Geometry\Denoiser.h" />
     <ClInclude Include="src\Geometry\Global.h" />
     <ClInclude Include="src\Geometry\Vertex.h" />
     <ClInclude Include="src\ImGui\imgui_impl_glfw.h" />
@@ -212,6 +213,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

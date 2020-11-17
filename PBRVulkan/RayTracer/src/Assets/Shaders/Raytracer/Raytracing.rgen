@@ -110,7 +110,7 @@ void main()
 	imageStore(AccumulationImage, ivec2(gl_LaunchIDNV.xy), vec4(accumulatedRadiance, 1.0));
 
 	float inv = 1.f / float(ubo.frame);
-	radiance = accumulatedRadiance * inv;
+	//radiance = accumulatedRadiance * inv;
 
 	// LDR scale
 	vec3 ldr = toneMap(radiance, 1.5);

@@ -54,6 +54,11 @@ namespace Tracer
 		CreateComputePipeline();
 	}
 
+	Application::~Application()
+	{
+		computer.reset();
+	}
+
 	void Application::LoadScene()
 	{
 		scene.reset(new Scene(CONFIGS[settings.SceneId], *device, *commandPool));
@@ -91,6 +96,7 @@ namespace Tracer
 
 	void Application::RecreateSwapChain()
 	{
+		menu->GetSettings().UseDenoiser = false;
 		settings = menu->GetSettings();
 		device->WaitIdle();
 		menu.reset();
@@ -249,13 +255,12 @@ namespace Tracer
 	{
 		if (settings.UseDenoiser)
 		{
-			computer->Submit();
+			// Runs on the previous frame
+			computer->Denoise();
 			CopyToSwapChain(commandBuffer, imageIndex, computer->GetOutputImage());
 		}
 		else
-		{
 			CopyToSwapChain(commandBuffer, imageIndex, GetOutputImage());
-		}
 	}
 
 	void Application::CreateComputePipeline()

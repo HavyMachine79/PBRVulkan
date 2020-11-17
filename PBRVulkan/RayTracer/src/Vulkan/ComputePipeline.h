@@ -17,7 +17,8 @@ namespace Vulkan
 		                const class ImageView& inputImage,
 		                const class ImageView& outputImage,
 		                const class ImageView& normalsImage,
-		                const class ImageView& positionsImage);
+		                const class ImageView& positionsImage,
+		                const std::vector<std::unique_ptr<class Buffer>>& uniformBuffers);
 
 		~ComputePipeline();
 
@@ -44,7 +45,6 @@ namespace Vulkan
 		VkPipelineLayout pipelineLayout{};
 
 		std::vector<VkDescriptorSet> descriptorSets;
-		std::unique_ptr<class RenderPass> renderPass;
 		std::unique_ptr<class DescriptorsManager> descriptorsManager;
 	};
 }

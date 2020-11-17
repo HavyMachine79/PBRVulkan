@@ -16,7 +16,7 @@ namespace Tracer
 	{
 	public:
 		Application();
-		~Application() = default;
+		~Application();
 
 		void Run() override;
 

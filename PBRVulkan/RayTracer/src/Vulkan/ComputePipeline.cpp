@@ -6,9 +6,12 @@
 #include "Shader.h"
 #include "SwapChain.h"
 #include "Device.h"
+#include "Buffer.h"
 #include "ImageView.h"
 #include "DescriptorSetLayout.h"
 #include "DescriptorsManager.h"
+
+#include "../Geometry/Denoiser.h"
 
 namespace Vulkan
 {
@@ -17,7 +20,9 @@ namespace Vulkan
 	                                 const ImageView& inputImage,
 	                                 const ImageView& outputImage,
 	                                 const ImageView& normalsImage,
-	                                 const ImageView& positionsImage): device(device), swapChain(swapChain)
+	                                 const ImageView& positionsImage,
+	                                 const std::vector<std::unique_ptr<class Buffer>>& uniformBuffers)
+		: device(device), swapChain(swapChain)
 	{
 		const Shader computeShader(device, "Denoiser.comp.spv");
 
@@ -31,28 +36,28 @@ namespace Vulkan
 			{ 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
 			{ 1, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
 			{ 2, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
-			{ 3, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT }
+			{ 3, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT },
+			{ 4, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT },
 		};
 
 		descriptorsManager.reset(new DescriptorsManager(device, swapChain, descriptorBindings));
 
-		std::vector<VkDescriptorSetLayout> layouts(swapChain.GetImage().size(),
-		                                           descriptorsManager->GetDescriptorSetLayout().Get());
+		std::vector<VkDescriptorSetLayout> layouts(1, descriptorsManager->GetDescriptorSetLayout().Get());
 
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorsManager->GetDescriptorPool();
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.GetImage().size());
+		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = layouts.data();
 
-		descriptorSets.resize(swapChain.GetImage().size());
+		descriptorSets.resize(1);
 
 		VK_CHECK(vkAllocateDescriptorSets(device.Get(), &allocInfo, descriptorSets.data()),
 		         "Allocate descriptor sets");
 
-		for (size_t imageIndex = 0; imageIndex < swapChain.GetImage().size(); imageIndex++)
+		// Descriptors
 		{
-			std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
+			std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
 
 			// Input image
 			VkDescriptorImageInfo inputImageInfo = {};
@@ -60,7 +65,7 @@ namespace Vulkan
 			inputImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[0].dstSet = descriptorSets[0];
 			descriptorWrites[0].dstBinding = 0;
 			descriptorWrites[0].dstArrayElement = 0;
 			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -73,7 +78,7 @@ namespace Vulkan
 			outputImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[1].dstSet = descriptorSets[0];
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -86,7 +91,7 @@ namespace Vulkan
 			normalsImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 			descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[2].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[2].dstSet = descriptorSets[0];
 			descriptorWrites[2].dstBinding = 2;
 			descriptorWrites[2].dstArrayElement = 0;
 			descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -99,12 +104,26 @@ namespace Vulkan
 			positionsImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 			descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[3].dstSet = descriptorSets[imageIndex];
+			descriptorWrites[3].dstSet = descriptorSets[0];
 			descriptorWrites[3].dstBinding = 3;
 			descriptorWrites[3].dstArrayElement = 0;
 			descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			descriptorWrites[3].descriptorCount = 1;
 			descriptorWrites[3].pImageInfo = &positionsImageInfo;
+
+			// Uniforms descriptor
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffers[0]->Get();
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(Uniforms::Denoiser);
+
+			descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[4].dstSet = descriptorSets[0];
+			descriptorWrites[4].dstBinding = 4;
+			descriptorWrites[4].dstArrayElement = 0;
+			descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[4].descriptorCount = 1;
+			descriptorWrites[4].pBufferInfo = &bufferInfo;
 
 			vkUpdateDescriptorSets(device.Get(), static_cast<uint32_t>(descriptorWrites.size()),
 			                       descriptorWrites.data(), 0, nullptr);
@@ -145,15 +164,10 @@ namespace Vulkan
 		for (auto* pipeline : pipelines)
 			vkDestroyPipeline(device.Get(), pipeline, nullptr);
 
-		pipelines.clear();
-		renderPass.reset();
-
 		if (pipelineLayout != nullptr)
 		{
 			vkDestroyPipelineLayout(device.Get(), pipelineLayout, nullptr);
 			pipelineLayout = nullptr;
 		}
-
-		descriptorSets.clear();
 	}
 }

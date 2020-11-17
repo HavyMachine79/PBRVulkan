@@ -77,6 +77,15 @@ struct Uniform
 	int integratorType;
 };
 
+struct DenoiserUniform
+{
+	uint iteration;
+	float colorPhi;
+	float normalPhi;
+	float positionPhi;
+	float stepWidth;
+};
+
 struct LightSample
 { 
 	vec3 normal; 
